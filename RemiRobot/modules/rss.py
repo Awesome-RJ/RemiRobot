@@ -10,7 +10,6 @@ from telegram.ext import CallbackContext, CommandHandler
 
 
 def show_url(update: Update, context: CallbackContext):
-    tg_chat_id = str(update.effective_chat.id)
     bot = context.bot
     args = context.args
     if len(args) >= 1:
@@ -31,6 +30,7 @@ def show_url(update: Update, context: CallbackContext):
                                                                feed_description,
                                                                html.escape(feed_link))
 
+            tg_chat_id = str(update.effective_chat.id)
             if len(link_processed.entries) >= 1:
                 entry_title = link_processed.entries[0].get(
                     "title", default="Unknown")
@@ -175,19 +175,14 @@ def rss_update(context: CallbackContext):
 
         # this loop checks for every entry from the RSS Feed link from the DB row
         for entry in feed_processed.entries:
-            # check if there are any new updates to the RSS Feed from the old entry
-            if entry.link != tg_old_entry_link:
-                new_entry_links.append(entry.link)
-                new_entry_titles.append(entry.title)
-            else:
+            if entry.link == tg_old_entry_link:
                 break
 
+            new_entry_links.append(entry.link)
+            new_entry_titles.append(entry.title)
         # check if there's any new entries queued from the last check
         if new_entry_links:
             sql.update_url(row_id, new_entry_links)
-        else:
-            pass
-
         if len(new_entry_links) < 5:
             # this loop sends every new update to each user from each group based on the DB entries
             for link, title in zip(
@@ -256,8 +251,6 @@ def rss_set(context: CallbackContext):
         # check if there's any new entries queued from the last check
         if new_entry_links:
             sql.update_url(row_id, new_entry_links)
-        else:
-            pass
 
 
 __help__ = """

@@ -29,8 +29,7 @@ def reverse(update: Update, context:CallbackContext):
     rtmid = msg.message_id
     imagename = "okgoogle.png"
 
-    reply = msg.reply_to_message
-    if reply:
+    if reply := msg.reply_to_message:
         if reply.sticker:
             file_id = reply.sticker.file_id
         elif reply.photo:
@@ -50,7 +49,7 @@ def reverse(update: Update, context:CallbackContext):
                 lim = 2
         else:
             lim = 2
-    elif args and not reply:
+    elif args:
         splatargs = msg.text.split(" ")
         if len(splatargs) == 3:                
             img_link = splatargs[1]
@@ -67,11 +66,11 @@ def reverse(update: Update, context:CallbackContext):
         try:
             urllib.request.urlretrieve(img_link, imagename)
         except HTTPError as HE:
-            if HE.reason == 'Not Found':
-                msg.reply_text("Image not found.")
-                return
-            elif HE.reason == 'Forbidden':
+            if HE.reason == 'Forbidden':
                 msg.reply_text("Couldn't access the provided link, The website might have blocked accessing to the website by bot or the website does not existed.")
+                return
+            elif HE.reason == 'Not Found':
+                msg.reply_text("Image not found.")
                 return
         except URLError as UE:
             msg.reply_text(f"{UE.reason}")
@@ -97,9 +96,9 @@ def reverse(update: Update, context:CallbackContext):
             return
 
         os.remove(imagename)
-        match = ParseSauce(fetchUrl + "&hl=en")
+        match = ParseSauce(f'{fetchUrl}&hl=en')
         guess = match['best_guess']
-        if match['override'] and not match['override'] == '':
+        if match['override'] and match['override'] != '':
             imgspage = match['override']
         else:
             imgspage = match['similar_images']
@@ -178,13 +177,8 @@ def scam(imgspage, lim):
 
     return imglinks
 
-__help__ = f"""
-*Commands:* 
+__help__ = """\x1f*Commands:* \x1f\x1f• '/reverse' *:* Does a reverse image search of the media which it was replied to.\x1f\x1fReports bugs at @RemiSupport\x1f"""
 
-• '/reverse' *:* Does a reverse image search of the media which it was replied to.
-
-Reports bugs at @RemiSupport
-"""
 
 __mod_name__ = "Image Search"
 

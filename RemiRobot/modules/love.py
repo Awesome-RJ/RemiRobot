@@ -20,12 +20,10 @@ def cuddle(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
 
-    reply_to = message.reply_to_message if message.reply_to_message else message
+    reply_to = message.reply_to_message or message
 
     curr_user = html.escape(message.from_user.first_name)
-    user_id = extract_user(message, args)
-
-    if user_id:
+    if user_id := extract_user(message, args):
         cuddled_user = bot.get_chat(user_id)
         user1 = curr_user
         user2 = html.escape(cuddled_user.first_name)
@@ -59,12 +57,10 @@ def lewd(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
 
-    reply_to = message.reply_to_message if message.reply_to_message else message
+    reply_to = message.reply_to_message or message
 
     curr_user = html.escape(message.from_user.first_name)
-    user_id = extract_user(message, args)
-
-    if user_id:
+    if user_id := extract_user(message, args):
         lewd_user = bot.get_chat(user_id)
         user1 = curr_user
         user2 = html.escape(lewd_user.first_name)
@@ -99,12 +95,10 @@ def romance(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
 
-    reply_to = message.reply_to_message if message.reply_to_message else message
+    reply_to = message.reply_to_message or message
 
     curr_user = html.escape(message.from_user.first_name)
-    user_id = extract_user(message, args)
-
-    if user_id:
+    if user_id := extract_user(message, args):
         romantic_user = bot.get_chat(user_id)
         user1 = curr_user
         user2 = html.escape(romantic_user.first_name)
@@ -140,12 +134,10 @@ def owo(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
 
-    reply_to = message.reply_to_message if message.reply_to_message else message
+    reply_to = message.reply_to_message or message
 
     curr_user = html.escape(message.from_user.first_name)
-    user_id = extract_user(message, args)
-
-    if user_id:
+    if user_id := extract_user(message, args):
         owo_user = bot.get_chat(user_id)
         user1 = curr_user
         user2 = html.escape(owo_user.first_name)
@@ -176,12 +168,10 @@ def uwu(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
 
-    reply_to = message.reply_to_message if message.reply_to_message else message
+    reply_to = message.reply_to_message or message
 
     curr_user = html.escape(message.from_user.first_name)
-    user_id = extract_user(message, args)
-
-    if user_id:
+    if user_id := extract_user(message, args):
         uwu_user = bot.get_chat(user_id)
         user1 = curr_user
         user2 = html.escape(uwu_user.first_name)

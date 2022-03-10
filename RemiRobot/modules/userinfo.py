@@ -75,25 +75,12 @@ def hpmanager(user):
             afkst = check_afk_status(user.id)
             # if user is afk and no reason then decrease 7%
             # else if reason exist decrease 5%
-            if not afkst.reason:
-                new_hp -= no_by_per(total_hp, 7)
-            else:
-                new_hp -= no_by_per(total_hp, 5)
+            new_hp -= no_by_per(total_hp, 5) if afkst.reason else no_by_per(total_hp, 7)
+            # fbanned users will have (2*number of fbans) less from max HP
+            # Example: if HP is 100 but user has 5 diff fbans
+            # Available HP is (2*5) = 10% less than Max HP
+            # So.. 10% of 100HP = 90HP
 
-        # fbanned users will have (2*number of fbans) less from max HP
-        # Example: if HP is 100 but user has 5 diff fbans
-        # Available HP is (2*5) = 10% less than Max HP
-        # So.. 10% of 100HP = 90HP
-
-
-# Commenting out fban health decrease cause it wasnt working and isnt needed ig.
-#_, fbanlist = get_user_fbanlist(user.id)
-#new_hp -= no_by_per(total_hp, 2 * len(fbanlist))
-
-# Bad status effects:
-# gbanned users will always have 5% HP from max HP
-# Example: If HP is 100 but gbanned
-# Available HP is 5% of 100 = 5HP
 
     else:
         new_hp = no_by_per(total_hp, 5)
@@ -116,10 +103,7 @@ def get_id(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
     msg = update.effective_message
-    user_id = extract_user(msg, args)
-
-    if user_id:
-
+    if user_id := extract_user(msg, args):
         if msg.reply_to_message and msg.reply_to_message.forward_from:
 
             user1 = message.reply_to_message.from_user
@@ -138,17 +122,15 @@ def get_id(update: Update, context: CallbackContext):
                 f"{html.escape(user.first_name)}'s id is <code>{user.id}</code>.",
                 parse_mode=ParseMode.HTML)
 
+    elif chat.type == "private":
+        msg.reply_text(
+            f"Your id is <code>{chat.id}</code>.",
+            parse_mode=ParseMode.HTML)
+
     else:
-
-        if chat.type == "private":
-            msg.reply_text(
-                f"Your id is <code>{chat.id}</code>.",
-                parse_mode=ParseMode.HTML)
-
-        else:
-            msg.reply_text(
-                f"This group's id is <code>{chat.id}</code>.",
-                parse_mode=ParseMode.HTML)
+        msg.reply_text(
+            f"This group's id is <code>{chat.id}</code>.",
+            parse_mode=ParseMode.HTML)
 
 
 @SaitamaTelethonClient.on(
@@ -258,13 +240,10 @@ def info(update: Update, context: CallbackContext):
         text += f"\n\n<b>Health:</b> <code>{userhp['earnedhp']}/{userhp['totalhp']}</code>\n[<i>{make_bar(int(userhp['percentage']))} </i>{userhp['percentage']}%]"
 
     try:
-        spamwtc = sw.get_ban(int(user.id))
-        if spamwtc:
+        if spamwtc := sw.get_ban(int(user.id)):
             text += "\n\n<b>This person is Spamwatched!</b>"
             text += f"\nReason: <pre>{spamwtc.reason}</pre>"
             text += "\nAppeal at @SpamWatchSupport"
-        else:
-            pass
     except:
         pass  # don't crash if api is down somehow...
 
@@ -341,16 +320,12 @@ def info(update: Update, context: CallbackContext):
 def about_me(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
-    user_id = extract_user(message, args)
-
-    if user_id:
+    if user_id := extract_user(message, args):
         user = bot.get_chat(user_id)
     else:
         user = message.from_user
 
-    info = sql.get_user_me_info(user.id)
-
-    if info:
+    if info := sql.get_user_me_info(user.id):
         update.effective_message.reply_text(
             f"*{user.first_name}*:\n{escape_markdown(info)}",
             parse_mode=ParseMode.MARKDOWN,
@@ -413,15 +388,12 @@ def about_bio(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
 
-    user_id = extract_user(message, args)
-    if user_id:
+    if user_id := extract_user(message, args):
         user = bot.get_chat(user_id)
     else:
         user = message.from_user
 
-    info = sql.get_user_bio(user.id)
-
-    if info:
+    if info := sql.get_user_bio(user.id):
         update.effective_message.reply_text(
             "*{}*:\n{}".format(user.first_name, escape_markdown(info)),
             parse_mode=ParseMode.MARKDOWN,

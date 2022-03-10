@@ -68,7 +68,7 @@ def new_fed(update: Update, context: CallbackContext):
                      "Please write the name of the federation!")
         return
     fednam = message.text.split(None, 1)[1]
-    if not fednam == '':
+    if fednam != '':
         fed_id = str(uuid.uuid4())
         fed_name = fednam
         LOGGER.info(fed_id)
@@ -209,18 +209,13 @@ def join_fed(update: Update, context: CallbackContext):
     administrators = chat.get_administrators()
     fed_id = sql.get_fed_id(chat.id)
 
-    if user.id in DRAGONS:
-        pass
-    else:
+    if user.id not in DRAGONS:
         for admin in administrators:
             status = admin.status
-            if status == "creator":
-                if str(admin.user.id) == str(user.id):
-                    pass
-                else:
-                    update.effective_message.reply_text(
-                        "Only group creators can use this command!")
-                    return
+            if status == "creator" and str(admin.user.id) != str(user.id):
+                update.effective_message.reply_text(
+                    "Only group creators can use this command!")
+                return
     if fed_id:
         message.reply_text("You cannot join two federations from one chat")
         return
@@ -238,8 +233,7 @@ def join_fed(update: Update, context: CallbackContext):
             )
             return
 
-        get_fedlog = sql.get_fed_log(args[0])
-        if get_fedlog:
+        if get_fedlog := sql.get_fed_log(args[0]):
             if eval(get_fedlog):
                 bot.send_message(
                     get_fedlog,
@@ -269,8 +263,7 @@ def leave_fed(update: Update, context: CallbackContext):
     getuser = bot.get_chat_member(chat.id, user.id).status
     if getuser in 'creator' or user.id in DRAGONS:
         if sql.chat_leave_fed(chat.id) is True:
-            get_fedlog = sql.get_fed_log(fed_id)
-            if get_fedlog:
+            if get_fedlog := sql.get_fed_log(fed_id):
                 if eval(get_fedlog):
                     bot.send_message(
                         get_fedlog,
@@ -408,15 +401,13 @@ def fed_info(update: Update, context: CallbackContext):
     user = update.effective_user
     if args:
         fed_id = args[0]
-        info = sql.get_fed_info(fed_id)
     else:
         fed_id = sql.get_fed_id(chat.id)
         if not fed_id:
             send_message(update.effective_message,
                          "This group is not in any federation!")
             return
-        info = sql.get_fed_info(fed_id)
-
+    info = sql.get_fed_info(fed_id)
     if is_user_fed_admin(fed_id, user.id) is False:
         update.effective_message.reply_text(
             "Only a federation admin can do this!")
@@ -424,7 +415,7 @@ def fed_info(update: Update, context: CallbackContext):
 
     owner = bot.get_chat(info['owner'])
     try:
-        owner_name = owner.first_name + " " + owner.last_name
+        owner_name = f'{owner.first_name} {owner.last_name}'
     except:
         owner_name = owner.first_name
     FEDADMIN = sql.all_fed_users(fed_id)
@@ -479,7 +470,7 @@ def fed_admin(update: Update, context: CallbackContext):
     text += "👑 Owner:\n"
     owner = bot.get_chat(info['owner'])
     try:
-        owner_name = owner.first_name + " " + owner.last_name
+        owner_name = f'{owner.first_name} {owner.last_name}'
     except:
         owner_name = owner.first_name
     text += " • {}\n".format(mention_html(owner.id, owner_name))
